@@ -1,0 +1,54 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #fafafa; color: #222; }
+input, button { font-family: inherit; }
+
+/* Mobile-first responsive tweaks */
+header input { width: 100% !important; max-width: 100%; box-sizing: border-box; }
+
+main { display: flex; gap: 20px; align-items: flex-start; }
+
+/* Produto item */
+li img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+
+/* Floating cart button (mobile) */
+.fab-cart { display: none; }
+
+@media (max-width: 800px) {
+  main { flex-direction: column; }
+  section { order: 1; }
+  aside { order: 2; width: 100%; border-left: none; border-top: 1px solid #eee; padding-left: 0; margin-top: 16px; }
+
+  /* Produtos list */
+  li { flex-direction: row; align-items: center; gap: 12px; }
+  li img { width: 64px; height: 64px; }
+
+  /* Botões e inputs maiores para toque */
+  button { padding: 10px 14px; font-size: 16px; }
+  input[type="number"] { width: 64px; }
+
+  /* Carrinho: botão ocupa toda a largura no layout empilhado */
+  aside .checkout-btn, aside button { width: 100%; box-sizing: border-box; }
+
+  /* Floating action button */
+  .fab-cart {
+    display: flex;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    background: #2e7d32;
+    color: #fff;
+    border: none;
+    padding: 12px 14px;
+    border-radius: 50px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    z-index: 9999;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+  }
+  .fab-cart .count { background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 12px; font-weight: 700; }
+}
+
+@media (min-width: 801px) {
+  aside { width: 340px; }
+}
