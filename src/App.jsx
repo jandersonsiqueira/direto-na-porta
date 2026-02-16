@@ -15,7 +15,7 @@ export default function App() {
   const [justAdded, setJustAdded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [orderNote, setOrderNote] = useState(() => localStorage.getItem('orderNote') || '')
-  const [paymentMethod, setPaymentMethod] = useState(() => localStorage.getItem('paymentMethod') || 'Dinheiro')
+  const [paymentMethod, setPaymentMethod] = useState(() => localStorage.getItem('paymentMethod') || 'Pix')
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 800)
@@ -133,12 +133,12 @@ export default function App() {
       // reset state
       setCart([])
       setOrderNote('')
-      setPaymentMethod('Dinheiro')
+      setPaymentMethod('Pix')
       setCartOpen(false)
       // explicitly write cleared values to localStorage so returning to the page starts from zero
       localStorage.setItem('cart', JSON.stringify([]))
       localStorage.setItem('orderNote', '')
-      localStorage.setItem('paymentMethod', 'Dinheiro')
+      localStorage.setItem('paymentMethod', 'Pix')
     } catch (e) {
       console.warn('Erro ao limpar localStorage após checkout', e)
     }
@@ -233,7 +233,8 @@ export default function App() {
                   <label style={{ fontWeight: 700 }}>Forma de pagamento</label>
                   <select value={paymentMethod} onChange={e => onChangePaymentMethod(e.target.value)} style={{ width: '100%', padding: 8, marginTop: 6 }}>
                     <option>Pix</option>
-                    <option>Cartão no local</option>
+                    <option>Cartão de Crédito</option>
+                    <option>Cartão de Débito</option>
                     <option>Dinheiro</option>
                   </select>
                 </div>
@@ -282,7 +283,8 @@ export default function App() {
               <label style={{ fontWeight: 700 }}>Forma de pagamento</label>
               <select value={paymentMethod} onChange={e => onChangePaymentMethod(e.target.value)} style={{ width: '100%', padding: 8, marginTop: 6 }}>
                 <option>Pix</option>
-                <option>Cartão no local</option>
+                <option>Cartão de Crédito</option>
+                <option>Cartão de Débito</option>
                 <option>Dinheiro</option>
               </select>
             </div>
