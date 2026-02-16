@@ -237,6 +237,18 @@ export default function App() {
                     <option>Cartão de Débito</option>
                     <option>Dinheiro</option>
                   </select>
+                  {paymentMethod === 'Pix' && (
+                    <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: '#f7fff7', border: '1px solid #e6f3ea', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                      <div>
+                        <div style={{ fontWeight: 700 }}>Chave Pix (CNPJ)</div>
+                        <div style={{ color: '#333', fontFamily: 'monospace', marginTop: 6 }}>64637329000140</div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                        <button onClick={() => navigator.clipboard?.writeText('64637329000140')} style={{ padding: '6px 10px', borderRadius: 6, background: '#2e7d32', color: '#fff', border: 'none' }}>Copiar</button>
+                        <div style={{ fontSize: 12, color: '#666' }}>Envie o comprovante pelo WhatsApp</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div style={{ marginTop: 12 }}>
                   <label style={{ fontWeight: 700 }}>Observação geral do pedido</label>
@@ -287,6 +299,18 @@ export default function App() {
                 <option>Cartão de Débito</option>
                 <option>Dinheiro</option>
               </select>
+              {paymentMethod === 'Pix' && (
+                <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: '#f7fff7', border: '1px solid #e6f3ea', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>Chave Pix (CNPJ)</div>
+                    <div style={{ color: '#333', fontFamily: 'monospace', marginTop: 6 }}>64637329000140</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                    <button onClick={() => navigator.clipboard?.writeText('64637329000140')} style={{ padding: '6px 10px', borderRadius: 6, background: '#2e7d32', color: '#fff', border: 'none' }}>Copiar</button>
+                    <div style={{ fontSize: 12, color: '#666' }}>Envie o comprovante pelo WhatsApp</div>
+                  </div>
+                </div>
+              )}
             </div>
             <div style={{ marginTop: 12 }}>
               <label style={{ fontWeight: 700 }}>Observação geral do pedido</label>
