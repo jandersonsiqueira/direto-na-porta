@@ -146,3 +146,14 @@ li img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
   box-shadow: 0 0 0 3px rgba(46,125,50,0.08);
   border-color: #2e7d32;
 }
+
+/* Status badge and hours popover */
+.status-badge { padding: 6px 10px; border-radius: 999px; font-weight: 800; font-size: 13px; color: #fff; }
+.status-badge.open { background: linear-gradient(90deg,#2e7d32,#60a162); box-shadow: 0 6px 18px rgba(46,125,50,0.14); }
+.status-badge.closed { background: linear-gradient(90deg,#b00020,#e57373); box-shadow: 0 6px 18px rgba(176,0,32,0.12); }
+.hours-popover { background: #fff; padding: 10px 12px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.09); border: 1px solid #f0f0f0; }
+.hours-popover div { line-height: 1.35; }
+
+/* Closed banner inside cart */
+.closed-banner { padding: 12px; border-radius: 10px; background: linear-gradient(180deg,#fff6f6,#fffaf0); border: 1px solid #ffe6e6; box-shadow: 0 8px 30px rgba(176,0,32,0.06); }
+.closed-banner strong { color: #b00020; }
