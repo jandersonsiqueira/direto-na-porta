@@ -14,8 +14,57 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  // order metadata (persisted)
   const [orderNote, setOrderNote] = useState(() => localStorage.getItem('orderNote') || '')
   const [paymentMethod, setPaymentMethod] = useState(() => localStorage.getItem('paymentMethod') || 'Pix')
+  // hours & status
+  const [showHours, setShowHours] = useState(false)
+  const [isOpenNow, setIsOpenNow] = useState(() => {
+    const now = new Date()
+    return computeIsOpen(now)
+  })
+
+  function computeIsOpen(d) {
+    const day = d.getDay() // 0 Sun, 1 Mon ... 6 Sat
+    const h = d.getHours()
+    // Mon-Fri 07:00-18:00
+    if (day >= 1 && day <= 5) return h >= 7 && h < 18
+    // Sat 07:00-12:00
+    if (day === 6) return h >= 7 && h < 12
+    // Sun closed
+    return false
+  }
+
+  function getNextOpenString(d) {
+    const day = d.getDay()
+    const h = d.getHours()
+    const names = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado']
+    // if currently open return null
+    if (computeIsOpen(d)) return null
+    // before opening today
+    if (day >=1 && day <=5) {
+      if (h < 7) return `Hoje, às 07:00` // weekday before opening
+      // after closing -> next day at 07:00 (could be Saturday)
+      const next = new Date(d)
+      next.setDate(d.getDate() + 1)
+      const nd = next.getDay()
+      if (nd === 0) return `Segunda, às 07:00` // next is Sunday -> open Monday
+      return `${names[nd]}, às 07:00`
+    }
+    if (day === 6) { // Saturday
+      if (h < 7) return `Hoje, às 07:00`
+      // after Saturday closing -> next Monday 07:00
+      return `Segunda, às 07:00`
+    }
+    // Sunday -> Monday 07:00
+    return `Segunda, às 07:00`
+  }
+
+  // update open state every 30s
+  useEffect(() => {
+    const id = setInterval(() => setIsOpenNow(computeIsOpen(new Date())), 30 * 1000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 800)
@@ -150,9 +199,28 @@ export default function App() {
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto', padding: 20, fontFamily: 'Segoe UI, Roboto, Arial' }}>
       <header style={{ textAlign: 'center', marginBottom: 20 }}>
-        <h1>📦 DIRETO NA PORTA</h1>
-        <p style={{ color: '#666' }}>Seu Mercado no Condomínio</p>
-        <input className="search-input" placeholder="Buscar produto..." value={q} onChange={e => setQ(e.target.value)} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <h1>📦 DIRETO NA PORTA</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className={`status-badge ${isOpenNow ? 'open' : 'closed'}`}>{isOpenNow ? 'Aberto agora' : 'Fechado'}</div>
+            <button className="hours-toggle" onClick={() => setShowHours(s => !s)} style={{ background: 'transparent', border: 'none', color: '#2e7d32', cursor: 'pointer', fontWeight: 700 }}>Horário</button>
+          </div>
+          <div style={{ fontSize: 13, color: '#666' }}>Seu Mercado no Condomínio</div>
+          {showHours && (
+            <div className="hours-popover" style={{ marginTop: 8 }}>
+              <div><strong>Horário de funcionamento</strong></div>
+              <div style={{ marginTop: 6 }}>
+                <div>Segunda a Sexta — 07:00 às 18:00</div>
+                <div>Sábado — 07:00 às 12:00</div>
+                <div>Domingo — Fechado</div>
+              </div>
+              {!isOpenNow && (
+                <div style={{ marginTop: 8, color: '#444' }}><em>Reabre: {getNextOpenString(new Date())}</em></div>
+              )}
+            </div>
+          )}
+        </div>
+        <input className="search-input" placeholder="Buscar produto..." value={q} onChange={e => setQ(e.target.value)} style={{ marginTop: 12 }} />
         {/* Category filter select (label above the select) */}
         <div style={{ marginTop: 12, display: 'flex', justifyContent: 'left', flexDirection: 'column', alignItems: 'flex-start' }}>
           <label htmlFor="category-select" style={{ marginBottom: 6, fontWeight: 700 }}>Categoria</label>
@@ -184,18 +252,30 @@ export default function App() {
               <div key={cat} style={{ marginBottom: 20 }}>
                 <h3 style={{ background: '#f4f4f4', padding: 8, borderRadius: 6 }}>{cat}</h3>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                  {prods.sort((a,b) => a.nome.localeCompare(b.nome)).map(prod => (
-                    <li key={prod.variant_id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 10, borderBottom: '1px solid #eee' }}>
-                      <img src={prod.image_url || 'https://via.placeholder.com/80'} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6 }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 16 }}>{prod.nome}</div>
-                        <div style={{ color: '#2e7d32', fontWeight: 'bold' }}>R$ {formatPrice(prod.price)}</div>
-                      </div>
-                      <div>
-                        <button onClick={() => { addToCart(prod) }} style={{ padding: '8px 12px', background:'#2e7d32', color:'#fff', border: 'none', borderRadius:6 }}>Adicionar</button>
-                      </div>
-                    </li>
-                  ))}
+                  {prods.sort((a,b) => a.nome.localeCompare(b.nome)).map(prod => {
+                    const cartItem = cart.find(c => c.variant_id === prod.variant_id)
+                    return (
+                      <li key={prod.variant_id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 10, borderBottom: '1px solid #eee' }}>
+                        <img src={prod.image_url || 'https://via.placeholder.com/80'} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 16 }}>{prod.nome}</div>
+                          <div style={{ color: '#2e7d32', fontWeight: 'bold' }}>R$ {formatPrice(prod.price)}</div>
+                        </div>
+                        <div>
+                          {/* show inline qty controls only on desktop; on mobile always show Add button */}
+                          {(isMobile && cartItem) ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <button className="qty-btn dec" aria-label={`Diminuir quantidade de ${prod.nome}`} onClick={() => decQty(prod.variant_id)}>−</button>
+                              <div style={{ minWidth: 30, textAlign: 'center', fontWeight: 700 }}>{cartItem.qty}</div>
+                              <button className="qty-btn inc" aria-label={`Aumentar quantidade de ${prod.nome}`} onClick={() => incQty(prod.variant_id)}>+</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => { addToCart(prod) }} style={{ padding: '8px 12px', background:'#2e7d32', color:'#fff', border: 'none', borderRadius:6 }}>Adicionar</button>
+                          )}
+                        </div>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )
@@ -207,9 +287,19 @@ export default function App() {
             {cartOpen && <div className="cart-backdrop" onClick={() => setCartOpen(false)} />}
             {cartOpen && (
               <aside className={`cart-panel open`} style={{ paddingLeft: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>Carrinho</h3>
-                </div>
+                {/* closed banner */}
+                {!isOpenNow && (
+                  <div className="closed-banner" style={{ marginBottom: 12 }}>
+                    <div style={{ fontWeight: 800, fontSize: 16 }}>Estamos fechados no momento</div>
+                    <div style={{ marginTop: 6, color: '#333' }}>
+                      Apesar de estarmos fechados, se eu estiver no condomínio posso fazer entregas imediatamente. Coloque seu pedido e eu verifico a disponibilidade — após o horário não há garantia de entrega imediata. Agradeço a compreensão!
+                    </div>
+                    <div style={{ marginTop: 8, fontSize: 13, color: '#666' }}><strong>Horário:</strong> Seg–Sex 07:00–18:00 · Sáb 07:00–12:00</div>
+                  </div>
+                )}
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <h3>Carrinho</h3>
+                 </div>
                 {cart.length === 0 && <p style={{ color: '#999' }}>Seu carrinho está vazio</p>}
                 {cart.map(item => (
                   <div key={item.variant_id} className="cart-item" style={{ marginBottom: 10 }}>
