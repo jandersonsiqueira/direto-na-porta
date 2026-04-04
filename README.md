@@ -12,12 +12,25 @@ Como usar
 
 3. Para rodar localmente:
 
-   npm run dev
+   - Frontend apenas (Vite):
+
+     npm run dev
+
+     Isto inicia só o frontend em http://localhost:5173; a rota `/api/catalog` não estará disponível neste modo.
+
+   - Frontend + funções serverless (emular Vercel localmente):
+
+     npx vercel login
+     npx vercel dev
+
+     Use `npx vercel dev` na raiz do projeto para servir também as rotas em `api/` (não é necessário instalar o CLI globalmente).
 
 4. Deploy:
 
    - Conecte o repositório ao Vercel e defina `LOYVERSE_TOKEN` nas Environment Variables.
-   - Deploy normalmente. A rota `/api/catalog` fará o proxy para a API da Loyverse sem expor o token.
+   - Deploy normalmente (push para a branch conectada). Você também pode usar o CLI:
+
+     npx vercel --prod
 
 Observações
 

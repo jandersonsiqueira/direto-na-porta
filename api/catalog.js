@@ -10,15 +10,43 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [catsRaw, itemsRaw, invRaw] = await Promise.all([
-      fetchJson(base + '/categories'),
-      fetchJson(base + '/items?limit=250'),
-      fetchJson(base + '/inventory?limit=250')
-    ])
-
+    const catsRaw = await fetchJson(base + '/categories')
     const categorias = catsRaw.categories || []
-    const items = itemsRaw.items || []
-    const inventory = invRaw.inventory_levels || []
+
+    const fetchAll = async (path) => {
+      const pageSize = 250
+      let all = []
+
+      const baseSep = path.includes('?') ? '&' : '?'
+      let url = base + path + `${baseSep}limit=${pageSize}`
+      let iterations = 0
+      const maxIterations = 50
+
+      while (url && iterations < maxIterations) {
+        iterations++
+        const chunk = await fetchJson(url)
+        const arr = chunk.items || chunk.inventory_levels || chunk.categories || []
+        if (!Array.isArray(arr) || arr.length === 0) break
+        all = all.concat(arr)
+
+        const nextCursor = chunk.next_cursor || chunk.nextCursor || chunk.next || chunk.cursor
+        if (nextCursor) {
+          const sep = path.includes('?') ? '&' : '?'
+          url = base + path + `${sep}limit=${pageSize}&cursor=${encodeURIComponent(nextCursor)}`
+          continue
+        }
+
+        if (arr.length < pageSize) break
+
+        const sep = path.includes('?') ? '&' : '?'
+        url = base + path + `${sep}limit=${pageSize}&offset=${all.length}`
+      }
+
+      return all
+    }
+
+    const items = await fetchAll('/items')
+    const inventory = await fetchAll('/inventory')
 
     const estoqueMap = {}
     inventory.forEach(i => { estoqueMap[i.variant_id] = i.in_stock })
