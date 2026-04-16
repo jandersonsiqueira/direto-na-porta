@@ -332,6 +332,8 @@ export default function App() {
                       <div>
                         <div style={{ fontWeight: 700 }}>Chave Pix (CNPJ)</div>
                         <div style={{ color: '#333', fontFamily: 'monospace', marginTop: 6 }}>64637329000140</div>
+                        <div style={{ marginTop: 8, fontSize: 13 }}>Banco: <strong>Nubank</strong></div>
+                        <div style={{ fontSize: 13 }}>Titular: <strong>José Janderson Sampaio Siqueira</strong></div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
                         <button onClick={() => navigator.clipboard?.writeText('64637329000140')} style={{ padding: '6px 10px', borderRadius: 6, background: '#2e7d32', color: '#fff', border: 'none' }}>Copiar</button>
@@ -394,6 +396,8 @@ export default function App() {
                   <div>
                     <div style={{ fontWeight: 700 }}>Chave Pix (CNPJ)</div>
                     <div style={{ color: '#333', fontFamily: 'monospace', marginTop: 6 }}>64637329000140</div>
+                    <div style={{ marginTop: 8, fontSize: 13 }}>Banco: <strong>Nubank</strong></div>
+                    <div style={{ fontSize: 13 }}>Titular: <strong>José Janderson Sampaio Siqueira</strong></div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
                     <button onClick={() => navigator.clipboard?.writeText('64637329000140')} style={{ padding: '6px 10px', borderRadius: 6, background: '#2e7d32', color: '#fff', border: 'none' }}>Copiar</button>
