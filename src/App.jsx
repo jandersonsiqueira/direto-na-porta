@@ -160,9 +160,6 @@ export default function App() {
 
   const checkoutWhatsApp = () => {
     if (cart.length === 0) { alert('Carrinho vazio'); return }
-    // show modal to let user choose how to open WhatsApp (web or app)
-    setShowWhatsAppModal(true)
-    return
     const lines = []
     lines.push('NOVO PEDIDO - DIRETO NA PORTA')
     lines.push('')
@@ -182,7 +179,7 @@ export default function App() {
 
     const message = encodeURIComponent(lines.join('\n'))
     const waNumber = '5585921963325' // formado como 55 + DDD + numero
-    const waLink = `https://wa.me/${waNumber}?text=${message}`
+    const waLink = `whatsapp://send?phone=${waNumber}&text=${message}`
     window.open(waLink, '_blank')
     // limpar carrinho e dados persistidos após finalizar o pedido e fechar o painel
     try {
@@ -192,53 +189,6 @@ export default function App() {
       setPaymentMethod('Pix')
       setCartOpen(false)
       // explicitly write cleared values to localStorage so returning to the page starts from zero
-      localStorage.setItem('cart', JSON.stringify([]))
-      localStorage.setItem('orderNote', '')
-      localStorage.setItem('paymentMethod', 'Pix')
-    } catch (e) {
-      console.warn('Erro ao limpar localStorage após checkout', e)
-    }
-  }
-
-  const buildWhatsAppMessage = () => {
-    const lines = []
-    lines.push('NOVO PEDIDO - DIRETO NA PORTA')
-    lines.push('')
-    cart.forEach((it, idx) => {
-      lines.push(`${idx+1}. ${it.nome} — ${it.qty} x R$ ${formatPrice(it.price)} = R$ ${formatPrice(it.price * it.qty)}`)
-    })
-    lines.push('')
-    lines.push(`Total: R$ ${formatPrice(total)}`)
-    lines.push('')
-    lines.push(`Forma de pagamento: ${paymentMethod}`)
-    if (orderNote && orderNote.trim()) {
-      lines.push('')
-      lines.push(`Observação do pedido: ${orderNote.trim()}`)
-    }
-    lines.push('')
-    lines.push('Obrigado!')
-    return encodeURIComponent(lines.join('\n'))
-  }
-
-  const openWhatsApp = (mode) => {
-    const message = buildWhatsAppMessage()
-    const waNumber = '5585921963325'
-    if (mode === 'app') {
-      // try to open native app
-      const appLink = `whatsapp://send?phone=${waNumber}&text=${message}`
-      window.open(appLink, '_blank')
-    } else {
-      // web link (wa.me)
-      const waLink = `https://wa.me/${waNumber}?text=${message}`
-      window.open(waLink, '_blank')
-    }
-    // after opening, clear cart and persisted data, close modal and panel
-    try {
-      setCart([])
-      setOrderNote('')
-      setPaymentMethod('Pix')
-      setCartOpen(false)
-      setShowWhatsAppModal(false)
       localStorage.setItem('cart', JSON.stringify([]))
       localStorage.setItem('orderNote', '')
       localStorage.setItem('paymentMethod', 'Pix')
@@ -473,21 +423,6 @@ export default function App() {
           </aside>
         )}
        </main>
-
-       {/* WhatsApp choice modal */}
-       {showWhatsAppModal && (
-         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200 }} onClick={() => setShowWhatsAppModal(false)}>
-           <div role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ width: 320, background: '#fff', padding: 16, borderRadius: 8 }}>
-             <h4 style={{ marginTop: 0 }}>Abrir pedido no WhatsApp</h4>
-             <p style={{ fontSize: 13, color: '#444' }}>Escolha como quer abrir o WhatsApp:</p>
-             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-               <button onClick={() => openWhatsApp('web')} style={{ flex: 1, padding: 10, background: '#25D366', color: '#fff', border: 'none', borderRadius: 6 }}>WhatsApp (web)</button>
-               <button onClick={() => openWhatsApp('app')} style={{ flex: 1, padding: 10, background: '#2e7d32', color: '#fff', border: 'none', borderRadius: 6 }}>WhatsApp (app)</button>
-             </div>
-             <button onClick={() => setShowWhatsAppModal(false)} style={{ marginTop: 12, width: '100%', padding: 8, background: '#eee', border: 'none', borderRadius: 6 }}>Cancelar</button>
-           </div>
-         </div>
-       )}
      </div>
    )
  }
