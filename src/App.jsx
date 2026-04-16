@@ -264,7 +264,7 @@ export default function App() {
             <div className="hours-popover" style={{ marginTop: 8 }}>
               <div><strong>Horário de funcionamento</strong></div>
               <div style={{ marginTop: 6 }}>
-                <div>Segunda a Sexta — 07:00 às 18:00</div>
+                <div>Segunda a Sexta — 07:00 às 17:30</div>
                 <div>Sábado — 07:00 às 12:00</div>
                 <div>Domingo — Fechado</div>
               </div>
@@ -348,7 +348,7 @@ export default function App() {
                     <div style={{ marginTop: 6, color: '#333' }}>
                       Apesar de estarmos fechados, se eu estiver no condomínio posso fazer entregas imediatamente. Coloque seu pedido e eu verifico a disponibilidade — após o horário não há garantia de entrega imediata. Agradeço a compreensão!
                     </div>
-                    <div style={{ marginTop: 8, fontSize: 13, color: '#666' }}><strong>Horário:</strong> Seg–Sex 07:00–18:00 · Sáb 07:00–12:00</div>
+                    <div style={{ marginTop: 8, fontSize: 13, color: '#666' }}><strong>Horário:</strong> Seg–Sex 07:00–17:30 · Sáb 07:00–12:00</div>
                   </div>
                 )}
                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
