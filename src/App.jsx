@@ -156,7 +156,12 @@ export default function App() {
   const onChangeOrderNote = (v) => setOrderNote(v)
   const onChangePaymentMethod = (v) => setPaymentMethod(v)
 
-  const total = cart.reduce((s, i) => s + Number(i.price || 0) * i.qty, 0)
+  // item subtotal
+  const baseTotal = cart.reduce((s, i) => s + Number(i.price || 0) * i.qty, 0)
+  // delivery rules: minimum R$10, otherwise delivery fee R$2
+  const deliveryFee = baseTotal > 0 && baseTotal < 10 ? 2 : 0
+  // final total including delivery
+  const total = baseTotal + deliveryFee
 
   const checkoutWhatsApp = () => {
     if (cart.length === 0) { alert('Carrinho vazio'); return }
@@ -167,6 +172,10 @@ export default function App() {
       lines.push(`${idx+1}. ${it.nome} — ${it.qty} x R$ ${formatPrice(it.price)} = R$ ${formatPrice(it.price * it.qty)}`)
     })
     lines.push('')
+    // include delivery fee info when applicable
+    if (deliveryFee > 0) {
+      lines.push(`Taxa de entrega: R$ ${formatPrice(deliveryFee)}`)
+    }
     lines.push(`Total: R$ ${formatPrice(total)}`)
     lines.push('')
     lines.push(`Forma de pagamento: ${paymentMethod}`)
@@ -311,6 +320,13 @@ export default function App() {
                     <div className="meta">
                       <div className="name">{item.nome}</div>
                       <div className="price">R$ {formatPrice(item.price * item.qty)}</div>
+                      {/* stock warning moved here, below price */}
+                      {typeof item.stock === 'number' && item.qty > item.stock && (
+                        <div style={{ color: '#b00020', marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontWeight: 700 }}>⚠️</span>
+                          <span>Somente {item.stock} em estoque</span>
+                        </div>
+                      )}
                     </div>
                     <div className="controls">
                       <div className="qty-controls">
@@ -352,9 +368,17 @@ export default function App() {
                 </div>
                  <hr />
                  <div style={{ display:'flex', justifyContent:'space-between', marginTop: 8 }}>
-                   <strong>Total</strong>
+                   <div style={{ display: 'flex', flexDirection: 'column' }}>
+                     {deliveryFee > 0 && (
+                       <div style={{ color: '#b00020', fontSize: 13 }}>Taxa de entrega: R$ {formatPrice(deliveryFee)}</div>
+                     )}
+                     <strong>Total</strong>
+                   </div>
                    <strong>R$ {formatPrice(total)}</strong>
                  </div>
+                 {deliveryFee > 0 && (
+                   <div style={{ color: '#b00020', fontSize: 13, marginTop: 6 }}>Pedidos abaixo de R$10,00 têm taxa de entrega de R$2,00</div>
+                 )}
                  <button onClick={checkoutWhatsApp} style={{ width:'100%', marginTop: 12, padding: 12, background:'#25D366', color:'#fff', border: 'none', borderRadius:6 }} className="checkout-btn">Finalizar pelo WhatsApp</button>
                </aside>
             )}
@@ -375,6 +399,12 @@ export default function App() {
                 <div className="meta">
                   <div className="name">{item.nome}</div>
                   <div className="price">R$ {formatPrice(item.price * item.qty)}</div>
+                  {typeof item.stock === 'number' && item.qty > item.stock && (
+                    <div style={{ color: '#b00020', marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontWeight: 700 }}>⚠️</span>
+                      <span>Somente {item.stock} em estoque</span>
+                    </div>
+                  )}
                 </div>
                 <div className="controls">
                   <div className="qty-controls">
@@ -416,9 +446,17 @@ export default function App() {
             </div>
             <hr />
             <div style={{ display:'flex', justifyContent:'space-between', marginTop: 8 }}>
-              <strong>Total</strong>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {deliveryFee > 0 && (
+                  <div style={{ color: '#b00020', fontSize: 13 }}>Taxa de entrega: R$ {formatPrice(deliveryFee)}</div>
+                )}
+                <strong>Total</strong>
+              </div>
               <strong>R$ {formatPrice(total)}</strong>
             </div>
+            {deliveryFee > 0 && (
+              <div style={{ color: '#b00020', fontSize: 13, marginTop: 6 }}>Pedidos abaixo de R$10,00 têm taxa de entrega de R$2,00</div>
+            )}
             <button onClick={checkoutWhatsApp} style={{ width:'100%', marginTop: 12, padding: 12, background:'#25D366', color:'#fff', border: 'none', borderRadius:6 }} className="checkout-btn">Finalizar pelo WhatsApp</button>
           </aside>
         )}

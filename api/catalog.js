@@ -73,7 +73,8 @@ export default async function handler(req, res) {
         price: loja.price ?? 0,
         currency: loja.currency ?? 'BRL',
         image_url: item.image_url || null,
-        variant_id: variante.variant_id
+        variant_id: variante.variant_id,
+        stock: estoqueReal
       })
     })
 
