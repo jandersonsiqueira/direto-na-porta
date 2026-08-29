@@ -162,6 +162,7 @@ export default function App() {
   const deliveryFee = baseTotal > 0 && baseTotal < 10 ? 2 : 0
   // final total including delivery
   const total = baseTotal + deliveryFee
+  const cartItemCount = cart.reduce((sum, item) => sum + item.qty, 0)
 
   const checkoutWhatsApp = () => {
     if (cart.length === 0) { alert('Carrinho vazio'); return }
@@ -210,10 +211,10 @@ export default function App() {
   const categoriasToShow = (selectedCategory && selectedCategory !== 'Todos') ? [selectedCategory] : categorias
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto', padding: 20, fontFamily: 'Segoe UI, Roboto, Arial' }}>
-      <header style={{ textAlign: 'center', marginBottom: 20 }}>
+    <div className="app-shell">
+      <header className="app-header">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <h1>📦 DIRETO NA PORTA</h1>
+          <img src="/logo.png" alt="Direto na Porta" className="app-logo" />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div className={`status-badge ${isOpenNow ? 'open' : 'closed'}`}>{isOpenNow ? 'Aberto agora' : 'Fechado'}</div>
             <button className="hours-toggle" onClick={() => setShowHours(s => !s)} style={{ background: 'transparent', border: 'none', color: '#2e7d32', cursor: 'pointer', fontWeight: 700 }}>Horário</button>
@@ -233,7 +234,10 @@ export default function App() {
             </div>
           )}
         </div>
-        <input className="search-input" placeholder="Buscar produto..." value={q} onChange={e => setQ(e.target.value)} style={{ marginTop: 12 }} />
+        <div className="search-wrap">
+          <span>⌕</span>
+          <input className="search-input" placeholder="O que você procura?" value={q} onChange={e => setQ(e.target.value)} />
+        </div>
         {/* Category filter select (label above the select) */}
         <div style={{ marginTop: 12, display: 'flex', justifyContent: 'left', flexDirection: 'column', alignItems: 'flex-start' }}>
           <label htmlFor="category-select" style={{ marginBottom: 6, fontWeight: 700 }}>Categoria</label>
@@ -262,17 +266,17 @@ export default function App() {
             const prods = (catalog[cat] || []).filter(p => p.nome.toLowerCase().includes(q.toLowerCase()))
             if (prods.length === 0) return null
             return (
-              <div key={cat} style={{ marginBottom: 20 }}>
-                <h3 style={{ background: '#f4f4f4', padding: 8, borderRadius: 6 }}>{cat}</h3>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
+              <div key={cat} className="category-section">
+                <div className="category-heading"><h2>{cat}</h2><span>{prods.length} {prods.length === 1 ? 'item' : 'itens'}</span></div>
+                <ul className="product-list">
                   {prods.sort((a,b) => a.nome.localeCompare(b.nome)).map(prod => {
                     const cartItem = cart.find(c => c.variant_id === prod.variant_id)
                     return (
-                      <li key={prod.variant_id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 10, borderBottom: '1px solid #eee' }}>
-                        <img src={prod.image_url || 'https://via.placeholder.com/80'} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6 }} />
+                      <li key={prod.variant_id} className="product-card">
+                        <img src={prod.image_url || 'https://via.placeholder.com/80'} alt="" />
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 16 }}>{prod.nome}</div>
-                          <div style={{ color: '#2e7d32', fontWeight: 'bold' }}>R$ {formatPrice(prod.price)}</div>
+                          <div className="product-name">{prod.nome}</div>
+                          <div className="product-price">R$ {formatPrice(prod.price)}</div>
                         </div>
                         <div>
                           {/* show inline qty controls only on desktop; on mobile always show Add button */}
@@ -283,7 +287,7 @@ export default function App() {
                               <button className="qty-btn inc" aria-label={`Aumentar quantidade de ${prod.nome}`} onClick={() => incQty(prod.variant_id)}>+</button>
                             </div>
                           ) : (
-                            <button onClick={() => { addToCart(prod) }} style={{ padding: '8px 12px', background:'#2e7d32', color:'#fff', border: 'none', borderRadius:6 }}>Adicionar</button>
+                            <button className="add-btn" onClick={() => { addToCart(prod) }}>Adicionar</button>
                           )}
                         </div>
                       </li>
@@ -366,6 +370,7 @@ export default function App() {
                   <label style={{ fontWeight: 700 }}>Observação geral do pedido</label>
                   <textarea value={orderNote} onChange={e => onChangeOrderNote(e.target.value)} placeholder="Ex: Deixar na maçaneta ou próximo a porta." style={{ width: '100%', padding: 8, marginTop: 6 }} rows={3} />
                 </div>
+                 <div className="checkout-footer">
                  <hr />
                  <div style={{ display:'flex', justifyContent:'space-between', marginTop: 8 }}>
                    <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -379,12 +384,13 @@ export default function App() {
                  {deliveryFee > 0 && (
                    <div style={{ color: '#b00020', fontSize: 13, marginTop: 6 }}>Pedidos abaixo de R$10,00 têm taxa de entrega de R$2,00</div>
                  )}
-                 <button onClick={checkoutWhatsApp} style={{ width:'100%', marginTop: 12, padding: 12, background:'#25D366', color:'#fff', border: 'none', borderRadius:6 }} className="checkout-btn">Finalizar pelo WhatsApp</button>
+                 <button onClick={checkoutWhatsApp} className="checkout-btn">Finalizar pelo WhatsApp <span>→</span></button>
+                 </div>
                </aside>
             )}
-            <button className={`fab-cart ${justAdded ? 'added' : ''}`} onClick={() => setCartOpen(prev => !prev)} aria-label="Abrir carrinho" title="Carrinho">
+            <button className={`fab-cart ${justAdded ? 'added' : ''} ${cartOpen ? 'cart-open' : ''}`} onClick={() => setCartOpen(prev => !prev)} aria-label="Abrir carrinho" title="Carrinho">
               <span style={{ fontSize: 18 }}>🛒</span>
-              <span className="count">{cart.length}</span>
+              <span className="fab-label">Carrinho</span><span className="count">{cartItemCount}</span>
             </button>
           </>
         ) : (
@@ -457,7 +463,9 @@ export default function App() {
             {deliveryFee > 0 && (
               <div style={{ color: '#b00020', fontSize: 13, marginTop: 6 }}>Pedidos abaixo de R$10,00 têm taxa de entrega de R$2,00</div>
             )}
-            <button onClick={checkoutWhatsApp} style={{ width:'100%', marginTop: 12, padding: 12, background:'#25D366', color:'#fff', border: 'none', borderRadius:6 }} className="checkout-btn">Finalizar pelo WhatsApp</button>
+            <div className="checkout-footer">
+            <button onClick={checkoutWhatsApp} className="checkout-btn">Finalizar pelo WhatsApp <span>→</span></button>
+            </div>
           </aside>
         )}
        </main>
