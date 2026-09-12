@@ -1,4 +1,35 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+
+const CART_VALIDITY_MS = 24 * 60 * 60 * 1000
+
+function loadSavedCart() {
+  try {
+    const savedAt = Number(localStorage.getItem('cartSavedAt'))
+    const rawCart = localStorage.getItem('cart')
+    const cart = JSON.parse(rawCart || '[]')
+
+    if (!Array.isArray(cart) || cart.length === 0) return []
+
+    // Carrinhos antigos, criados antes da validade existir, ganham uma janela nova de 24h.
+    if (!savedAt) {
+      localStorage.setItem('cartSavedAt', String(Date.now()))
+      return cart
+    }
+
+    if (Date.now() - savedAt >= CART_VALIDITY_MS) {
+      localStorage.removeItem('cart')
+      localStorage.removeItem('cartSavedAt')
+      localStorage.removeItem('orderNote')
+      localStorage.removeItem('paymentMethod')
+      return []
+    }
+
+    return cart
+  } catch (error) {
+    console.warn('Não foi possível recuperar o carrinho salvo', error)
+    return []
+  }
+}
 
 function formatPrice(v) {
   return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -8,7 +39,7 @@ export default function App() {
   const [catalog, setCatalog] = useState({})
   const [q, setQ] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Todos')
-  const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem('cart') || '[]'))
+  const [cart, setCart] = useState(loadSavedCart)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [cartOpen, setCartOpen] = useState(false)
@@ -24,6 +55,7 @@ export default function App() {
     return computeIsOpen(now)
   })
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
+  const checkoutHydrated = useRef(false)
 
   function computeIsOpen(d) {
     const day = d.getDay() // 0 Sun, 1 Mon ... 6 Sat
@@ -113,10 +145,46 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
+    // Não renova a validade apenas porque a página foi aberta novamente.
+    if (!checkoutHydrated.current) {
+      checkoutHydrated.current = true
+      return
+    }
+
+    if (cart.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cart))
+      localStorage.setItem('cartSavedAt', String(Date.now()))
+    } else {
+      localStorage.removeItem('cart')
+      localStorage.removeItem('cartSavedAt')
+    }
     localStorage.setItem('orderNote', orderNote)
     localStorage.setItem('paymentMethod', paymentMethod)
   }, [cart, orderNote, paymentMethod])
+
+  // Também expira o carrinho se a pessoa deixar a página aberta por mais de 24h.
+  useEffect(() => {
+    const expireCartIfNeeded = () => {
+      const savedAt = Number(localStorage.getItem('cartSavedAt'))
+      if (cart.length > 0 && savedAt && Date.now() - savedAt >= CART_VALIDITY_MS) {
+        setCart([])
+        setOrderNote('')
+        setPaymentMethod('Pix')
+        setCartOpen(false)
+        localStorage.removeItem('cart')
+        localStorage.removeItem('cartSavedAt')
+        localStorage.removeItem('orderNote')
+        localStorage.removeItem('paymentMethod')
+      }
+    }
+
+    const intervalId = setInterval(expireCartIfNeeded, 60 * 1000)
+    window.addEventListener('focus', expireCartIfNeeded)
+    return () => {
+      clearInterval(intervalId)
+      window.removeEventListener('focus', expireCartIfNeeded)
+    }
+  }, [cart.length])
 
   const addToCart = (prod) => {
     setCart(prev => {
@@ -315,7 +383,7 @@ export default function App() {
                   </div>
                 )}
                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <h3>Carrinho</h3>
+                   <div className="cart-heading"><div><span className="eyebrow">SEU PEDIDO</span><h3>Carrinho</h3></div><button className="cart-close-btn" onClick={() => setCartOpen(false)} aria-label="Fechar carrinho">×</button></div>
                  </div>
                 {cart.length === 0 && <p style={{ color: '#999' }}>Seu carrinho está vazio</p>}
                 {cart.map(item => (
@@ -396,7 +464,7 @@ export default function App() {
         ) : (
           <aside className="cart-panel desktop" style={{ width: 340, borderLeft: '1px solid #eee', paddingLeft: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3>Carrinho</h3>
+              <div className="cart-heading"><div><span className="eyebrow">SEU PEDIDO</span><h3>Carrinho</h3></div></div>
             </div>
             {cart.length === 0 && <p style={{ color: '#999' }}>Seu carrinho está vazio</p>}
             {cart.map(item => (
