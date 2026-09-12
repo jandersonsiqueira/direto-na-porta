@@ -56,6 +56,43 @@ export default function App() {
   })
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
   const checkoutHydrated = useRef(false)
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [showInstallBanner, setShowInstallBanner] = useState(false)
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault()
+      setInstallPrompt(event)
+      if (localStorage.getItem('installBannerDismissed') !== 'true') {
+        setShowInstallBanner(true)
+      }
+    }
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null)
+      setShowInstallBanner(false)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
+  const installApp = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    await installPrompt.userChoice
+    setInstallPrompt(null)
+    setShowInstallBanner(false)
+  }
+
+  const dismissInstallBanner = () => {
+    localStorage.setItem('installBannerDismissed', 'true')
+    setShowInstallBanner(false)
+  }
 
   function computeIsOpen(d) {
     const day = d.getDay() // 0 Sun, 1 Mon ... 6 Sat
@@ -280,6 +317,17 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {showInstallBanner && (
+        <div className="install-banner" role="dialog" aria-label="Instalar aplicativo">
+            <div className="install-icon"><img src="/logo-pwa.png" alt="" /></div>
+          <div className="install-copy">
+            <strong>Tenha o mercadinho sempre à mão</strong>
+            <span>Instale o Direto na Porta no seu celular.</span>
+          </div>
+          <button className="install-action" onClick={installApp}>Instalar</button>
+          <button className="install-dismiss" onClick={dismissInstallBanner} aria-label="Fechar aviso">×</button>
+        </div>
+      )}
       <header className="app-header">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <img src="/logo.png" alt="Direto na Porta" className="app-logo" />
